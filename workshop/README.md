@@ -1,6 +1,6 @@
 # From Prompt to Web App
 
-**A hands-on workshop for InfAU staff — 2 hours**
+**A hands-on workshop for InfAU — 2 hours**
 
 Build an interactive web application using AI-assisted coding. No web development experience needed.
 
@@ -12,9 +12,9 @@ Build an interactive web application using AI-assisted coding. No web developmen
 
 To hit the ground running, please complete these steps before we meet:
 
-1. **Install VS Code** — <https://code.visualstudio.com/download>
-2. **Sign up for Claude** ($20/mo Pro or $100/mo Max) — <https://claude.ai/pricing>
-3. **Create a GitHub account** (free) — <https://github.com/signup>
+1. **Install VS Code** — [https://code.visualstudio.com/download](https://code.visualstudio.com/download)
+2. **Sign up for Claude** ($20/mo Pro or $100/mo Max) — [https://claude.ai/pricing](https://claude.ai/pricing)
+3. **Create a GitHub account** (free) — [https://github.com/signup](https://github.com/signup)
    The instructor will send you an org invitation — accept it before the session.
 
 That's it. We'll do the rest together.
@@ -40,13 +40,21 @@ Ask Claude:
 Create a new folder called my-workshop-project and open it as a VS Code workspace.
 ```
 
+### Install Live Server
+
+```
+Install the "Live Server" extension in VS Code.
+```
+
+This gives you a local web server with auto-reload — when you save a file, the browser refreshes automatically. Right-click any `.html` file → **Open with Live Server** to use it.
+
 ### Sanity Check
 
 Type this prompt into Claude (replace with your name):
 
 ```
 Create a file called hello.html with a page that says "Hello from [your name]!"
-with a nice gradient background. Open it in my browser.
+with a nice gradient background. Open it with Live Server.
 ```
 
 You should see a styled page open in your browser. If it works — you're all set.
@@ -85,6 +93,7 @@ Initialize the project and start the dev server.
 ```
 
 This gives you:
+
 - **Hot reload** — see changes instantly without refreshing
 - **shadcn/ui** — a library of polished, accessible UI components
 - **Tailwind CSS** — utility classes for fast, consistent styling
@@ -107,14 +116,14 @@ The `/frontend-design` skill shifts Claude into a design-focused mode that produ
 
 Drop these phrases into any prompt to improve the output:
 
-| Phrase | What it does |
-|--------|-------------|
-| `"use shadcn components"` | Polished UI components instead of raw HTML |
-| `"use a dark theme with rounded corners"` | Cohesive, modern aesthetic |
-| `"make it responsive"` | Works on mobile and desktop |
-| `"add smooth animations"` | Micro-interactions and transitions |
-| `"use Tailwind CSS for styling"` | Utility-first, consistent design |
-| `"add loading states"` | Professional feel while data loads |
+| Phrase                                      | What it does                               |
+| ------------------------------------------- | ------------------------------------------ |
+| `"use shadcn components"`                 | Polished UI components instead of raw HTML |
+| `"use a dark theme with rounded corners"` | Cohesive, modern aesthetic                 |
+| `"make it responsive"`                    | Works on mobile and desktop                |
+| `"add smooth animations"`                 | Micro-interactions and transitions         |
+| `"use Tailwind CSS for styling"`          | Utility-first, consistent design           |
+| `"add loading states"`                    | Professional feel while data loads         |
 
 **Describe the vibe you want** — *"minimal and clean"*, *"data-dense dashboard"*, *"playful and colorful"* all work.
 
@@ -134,7 +143,7 @@ Copy the starter prompt into Claude, watch it build, then try the next steps one
 
 ### Project A: Interactive 3D City Viewer
 
-**You need:** `city-model.glb` in your project folder (provided by the instructor).
+**You need:** weimar data in your project folder (provided in `workshop/data/weimar/`).
 
 **Starter prompt:**
 
@@ -205,7 +214,7 @@ Draw it with SVG. Make it look professional with a dark theme.
 Create a web page that runs a genetic algorithm to pack colored rectangles
 into a 800x600 canvas with minimal overlap and wasted space. Show the
 current best layout animated in real-time. Display generation count and
-fitness score. Use a dark theme. Add start/stop/reset buttons.
+fitness score. Add start/stop/reset buttons.
 ```
 
 **Next steps:**
