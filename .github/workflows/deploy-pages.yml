@@ -3,7 +3,8 @@ name: Deploy isovist app to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: [isovist-app/**]
+    paths: [isovist-app/**, .github/workflows/deploy-pages.yml]
+  workflow_dispatch:
 
 permissions:
   contents: read
