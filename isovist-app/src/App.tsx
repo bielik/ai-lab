@@ -12,8 +12,8 @@ function App() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/weimar-buildings-3d.geojson').then(r => r.json()),
-      fetch('/weimar-streets.geojson').then(r => r.json())
+      fetch(`${import.meta.env.BASE_URL}weimar-buildings-3d.geojson`).then(r => r.json()),
+      fetch(`${import.meta.env.BASE_URL}weimar-streets.geojson`).then(r => r.json())
     ]).then(([buildings, streets]) => {
       setBuildingsData(buildings)
       setStreetsData(streets)
