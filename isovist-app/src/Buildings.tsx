@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { GeoJSONCollection } from './types'
 
-// Coordinates are in CRS84 degrees; 1° ≈ 111 km.
+// Coordinates are in CRS84 degrees; 1 deg ≈ 111 km.
 // With SCALE = 1000, 1 scene unit ≈ 111 m.
 // Heights in the GeoJSON are in metres, so divide by ~111 to match.
 const SCALE = 1000
-const HEIGHT_SCALE = SCALE / 111000 // ≈ 0.009
+const HEIGHT_SCALE = SCALE / 111000
 
 interface BuildingsProps {
   data: GeoJSONCollection
@@ -32,12 +32,11 @@ export function Buildings({ data, center }: BuildingsProps) {
           for (const coord of ring) {
             positions.push(
               (coord[0] - center[0]) * SCALE,
-              (coord[2] ?? 0) * HEIGHT_SCALE, // height in metres → scene units
+              (coord[2] ?? 0) * HEIGHT_SCALE,
               -(coord[1] - center[1]) * SCALE
             )
           }
 
-          // Triangulate the polygon face (fan from first vertex)
           const vertCount = ring.length
           const n = (ring[0][0] === ring[vertCount - 1][0] && ring[0][1] === ring[vertCount - 1][1])
             ? vertCount - 1
@@ -59,7 +58,13 @@ export function Buildings({ data, center }: BuildingsProps) {
 
   return (
     <mesh geometry={geometry}>
-      <meshStandardMaterial color="white" side={THREE.DoubleSide} />
+      <meshPhysicalMaterial
+        color="#f5f5f5"
+        roughness={0.85}
+        metalness={0.0}
+        clearcoat={0.05}
+        side={THREE.DoubleSide}
+      />
     </mesh>
   )
 }

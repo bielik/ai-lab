@@ -4,15 +4,14 @@ import { GeoJSONCollection } from './types'
 
 const SCALE = 1000
 const RAY_COUNT = 360
-const MAX_RADIUS = 2 // in scaled units
 
 interface IsovistProps {
   viewpoint: THREE.Vector3
   buildingsData: GeoJSONCollection
   center: [number, number]
+  maxRadius: number
 }
 
-// Extract 2D building footprint edges (on the ground plane) from the 3D building data
 function extractFootprintEdges(data: GeoJSONCollection, center: [number, number]): [number, number, number, number][] {
   const edges: [number, number, number, number][] = []
   const edgeSet = new Set<string>()
@@ -23,7 +22,6 @@ function extractFootprintEdges(data: GeoJSONCollection, center: [number, number]
 
     for (const polygon of polys) {
       for (const ring of polygon) {
-        // Collect ground-level edges (z === 0) from each face
         const groundPts: [number, number][] = []
         for (const coord of ring) {
           if (Math.abs(coord[2]) < 0.01) {
@@ -37,10 +35,8 @@ function extractFootprintEdges(data: GeoJSONCollection, center: [number, number]
         for (let i = 0; i < groundPts.length - 1; i++) {
           const [x1, z1] = groundPts[i]
           const [x2, z2] = groundPts[i + 1]
-          // Skip degenerate edges
           if (Math.abs(x1 - x2) < 0.0001 && Math.abs(z1 - z2) < 0.0001) continue
 
-          // Deduplicate edges
           const key = [
             Math.round(Math.min(x1, x2) * 10000),
             Math.round(Math.min(z1, z2) * 10000),
@@ -59,7 +55,6 @@ function extractFootprintEdges(data: GeoJSONCollection, center: [number, number]
   return edges
 }
 
-// Ray-segment intersection in 2D (XZ plane)
 function raySegmentIntersect(
   ox: number, oz: number, dx: number, dz: number,
   x1: number, z1: number, x2: number, z2: number
@@ -79,8 +74,8 @@ function raySegmentIntersect(
   return null
 }
 
-export function Isovist({ viewpoint, buildingsData, center }: IsovistProps) {
-  const shape = useMemo(() => {
+export function Isovist({ viewpoint, buildingsData, center, maxRadius }: IsovistProps) {
+  const { polygon, outline } = useMemo(() => {
     const edges = extractFootprintEdges(buildingsData, center)
     const vx = viewpoint.x
     const vz = viewpoint.z
@@ -91,7 +86,7 @@ export function Isovist({ viewpoint, buildingsData, center }: IsovistProps) {
       const dx = Math.cos(angle)
       const dz = Math.sin(angle)
 
-      let minDist = MAX_RADIUS
+      let minDist = maxRadius
 
       for (const [x1, z1, x2, z2] of edges) {
         const t = raySegmentIntersect(vx, vz, dx, dz, x1, z1, x2, z2)
@@ -102,25 +97,20 @@ export function Isovist({ viewpoint, buildingsData, center }: IsovistProps) {
 
       points.push(new THREE.Vector3(
         vx + dx * minDist,
-        0.02, // slightly above ground
+        0.02,
         vz + dz * minDist
       ))
     }
 
-    // Create shape geometry
+    // Fan geometry for fill
     const shapeGeom = new THREE.BufferGeometry()
-    const vertices: number[] = []
+    const vertices: number[] = [vx, 0.02, vz]
     const indices: number[] = []
 
-    // Center point
-    vertices.push(vx, 0.02, vz)
-
-    // Fan points
     for (const p of points) {
       vertices.push(p.x, p.y, p.z)
     }
 
-    // Fan triangles
     for (let i = 1; i <= RAY_COUNT; i++) {
       const next = i === RAY_COUNT ? 1 : i + 1
       indices.push(0, i, next)
@@ -129,24 +119,38 @@ export function Isovist({ viewpoint, buildingsData, center }: IsovistProps) {
     shapeGeom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
     shapeGeom.setIndex(indices)
 
-    return shapeGeom
-  }, [viewpoint, buildingsData, center])
+    // Outline geometry
+    const outlinePoints: number[] = []
+    for (let i = 0; i < points.length; i++) {
+      const a = points[i]
+      const b = points[(i + 1) % points.length]
+      outlinePoints.push(a.x, 0.03, a.z, b.x, 0.03, b.z)
+    }
+    const outlineGeom = new THREE.BufferGeometry()
+    outlineGeom.setAttribute('position', new THREE.Float32BufferAttribute(outlinePoints, 3))
+
+    return { polygon: shapeGeom, outline: outlineGeom }
+  }, [viewpoint, buildingsData, center, maxRadius])
 
   return (
     <group>
-      {/* Isovist polygon */}
-      <mesh geometry={shape}>
+      {/* Isovist fill */}
+      <mesh geometry={polygon}>
         <meshBasicMaterial
           color="#3b82f6"
           transparent
-          opacity={0.35}
+          opacity={0.25}
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
+      {/* Isovist outline */}
+      <lineSegments geometry={outline}>
+        <lineBasicMaterial color="#2563eb" transparent opacity={0.6} />
+      </lineSegments>
       {/* Viewpoint marker */}
       <mesh position={[viewpoint.x, 0.05, viewpoint.z]}>
-        <sphereGeometry args={[0.05, 16, 16]} />
+        <sphereGeometry args={[0.04, 16, 16]} />
         <meshBasicMaterial color="#ef4444" />
       </mesh>
     </group>

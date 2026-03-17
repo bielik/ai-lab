@@ -8,6 +8,7 @@ function App() {
   const [buildingsData, setBuildingsData] = useState<GeoJSONCollection | null>(null)
   const [streetsData, setStreetsData] = useState<GeoJSONCollection | null>(null)
   const [viewpoint, setViewpoint] = useState<THREE.Vector3 | null>(null)
+  const [maxRadius, setMaxRadius] = useState(2)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -21,7 +22,6 @@ function App() {
     })
   }, [])
 
-  // Compute center of the data for coordinate normalization
   const center = useMemo<[number, number]>(() => {
     if (!streetsData) return [0, 0]
 
@@ -41,6 +41,9 @@ function App() {
     return [(minX + maxX) / 2, (minY + maxY) / 2]
   }, [streetsData])
 
+  // Convert scene units to real-world metres (1 scene unit ≈ 111 m)
+  const radiusMetres = Math.round(maxRadius * 111)
+
   if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-white">
@@ -50,10 +53,11 @@ function App() {
   }
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
       <Canvas
         camera={{ position: [0, 12, 12], fov: 50, near: 0.01, far: 1000 }}
-        style={{ background: 'white' }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
+        style={{ background: '#fafafa' }}
       >
         <Scene
           buildingsData={buildingsData!}
@@ -61,12 +65,35 @@ function App() {
           center={center}
           viewpoint={viewpoint}
           setViewpoint={setViewpoint}
+          maxRadius={maxRadius}
         />
       </Canvas>
 
-      {/* Instructions overlay */}
-      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 text-sm text-gray-600 shadow-sm">
-        Click on the ground to place a viewpoint and compute the isovist
+      {/* Controls panel */}
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-xl px-5 py-4 shadow-md border border-gray-100 w-64">
+        <h2 className="text-sm font-semibold text-gray-800 mb-3">Isovist Settings</h2>
+
+        <label className="block text-xs text-gray-500 mb-1">
+          Range: {radiusMetres} m
+        </label>
+        <input
+          type="range"
+          min="0.5"
+          max="6"
+          step="0.1"
+          value={maxRadius}
+          onChange={e => setMaxRadius(parseFloat(e.target.value))}
+          className="w-full accent-blue-500"
+        />
+        <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+          <span>55 m</span>
+          <span>666 m</span>
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 text-sm text-gray-500 shadow-sm">
+        Click on the ground to place a viewpoint
       </div>
     </div>
   )

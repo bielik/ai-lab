@@ -1,6 +1,6 @@
 import { useRef, useCallback } from 'react'
 import { ThreeEvent } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { OrbitControls, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
 import { Buildings } from './Buildings'
 import { Streets } from './Streets'
@@ -13,9 +13,10 @@ interface SceneProps {
   center: [number, number]
   viewpoint: THREE.Vector3 | null
   setViewpoint: (v: THREE.Vector3) => void
+  maxRadius: number
 }
 
-export function Scene({ buildingsData, streetsData, center, viewpoint, setViewpoint }: SceneProps) {
+export function Scene({ buildingsData, streetsData, center, viewpoint, setViewpoint, maxRadius }: SceneProps) {
   const pointerDownPos = useRef<{ x: number; y: number } | null>(null)
 
   const handlePointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
@@ -28,7 +29,6 @@ export function Scene({ buildingsData, streetsData, center, viewpoint, setViewpo
     const dy = e.nativeEvent.clientY - pointerDownPos.current.y
     const dist = Math.sqrt(dx * dx + dy * dy)
 
-    // Only place viewpoint if this was a click (not a drag)
     if (dist < 5 && e.point) {
       setViewpoint(new THREE.Vector3(e.point.x, 0, e.point.z))
     }
@@ -37,9 +37,21 @@ export function Scene({ buildingsData, streetsData, center, viewpoint, setViewpo
 
   return (
     <>
-      {/* Lighting */}
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[10, 20, 10]} intensity={0.8} />
+      {/* Lighting — soft ambient + warm directional + subtle fill */}
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[10, 20, 10]} intensity={0.7} color="#ffffff" />
+      <directionalLight position={[-8, 12, -6]} intensity={0.2} color="#e8eeff" />
+      <hemisphereLight args={['#f0f0ff', '#d0d0e0', 0.3]} />
+
+      {/* Contact shadows on the ground plane */}
+      <ContactShadows
+        position={[0, 0, 0]}
+        opacity={0.4}
+        scale={30}
+        blur={2.5}
+        far={1}
+        resolution={512}
+      />
 
       {/* Camera controls */}
       <OrbitControls makeDefault />
@@ -67,6 +79,7 @@ export function Scene({ buildingsData, streetsData, center, viewpoint, setViewpo
           viewpoint={viewpoint}
           buildingsData={buildingsData}
           center={center}
+          maxRadius={maxRadius}
         />
       )}
     </>
