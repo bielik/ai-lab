@@ -16,7 +16,7 @@ export function Streets({ data, center }: StreetsProps) {
     for (const feature of data.features) {
       if (feature.geometry.type !== 'LineString') continue
 
-      const coords = feature.geometry.coordinates as number[][]
+      const coords = feature.geometry.coordinates as unknown as number[][]
 
       for (let i = 0; i < coords.length - 1; i++) {
         const a = coords[i]

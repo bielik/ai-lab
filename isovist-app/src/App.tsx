@@ -29,7 +29,7 @@ function App() {
     let minY = Infinity, maxY = -Infinity
 
     for (const feature of streetsData.features) {
-      const coords = feature.geometry.coordinates as number[][]
+      const coords = feature.geometry.coordinates as unknown as number[][]
       for (const c of coords) {
         minX = Math.min(minX, c[0])
         maxX = Math.max(maxX, c[0])
